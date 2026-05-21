@@ -42,7 +42,16 @@ export const RegisterPage = () => {
       success('Account created successfully!');
       navigate('/');
     } catch (err) {
-      error(err.response?.data?.error || 'Registration failed. Try again.');
+      console.error('Registration error:', err);
+      let errorMessage = 'Registration failed. Try again.';
+      
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      error(errorMessage);
     }
   };
 
