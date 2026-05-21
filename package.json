@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "build": "echo \"Vercel build step placeholder – actual builds are in frontend and backend configs\""
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "postinstall": "npm install --prefix frontend && npm install --prefix backend"
   }
 }
