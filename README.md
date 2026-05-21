@@ -26,6 +26,12 @@ VShield is a full-stack, enterprise-grade background verification platform. It a
 - Cloudinary (Cloud Storage)
 - JWT & bcryptjs (Security)
 
+## Demo / Test Credentials
+
+Use these credentials to log in and test the live or local deployment:
+* **Email:** `admin@test.com`
+* **Password:** `password123`
+
 ## Setup Instructions
 
 ### Prerequisites
