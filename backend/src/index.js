@@ -30,11 +30,11 @@ app.get('/health', (_req, res) => {
 });
 
 // App routes
-app.use('/auth', authRoutes);
-app.use('/candidates', candidateRoutes);
-app.use('/verify', verificationRoutes);
-app.use('/verification', verificationRoutes); // Aligns with the frontend store path `/api/verification/...`
-app.use('/reports', reportRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/candidates', candidateRoutes);
+app.use('/api/verify', verificationRoutes);
+app.use('/api/verification', verificationRoutes); // Aligns with the frontend store path `/api/verification/...`
+app.use('/api/reports', reportRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
