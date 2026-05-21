@@ -1,0 +1,123 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.reportService = exports.ReportService = void 0;
+const pdfkit_1 = __importDefault(require("pdfkit"));
+const client_1 = require("@prisma/client");
+const masking_1 = require("../utils/masking");
+const prisma = new client_1.PrismaClient();
+class ReportService {
+    async generateReport(candidateId, userId) {
+        const candidate = await prisma.candidate.findFirst({
+            where: { id: candidateId, userId },
+            include: {
+                verificationLogs: {
+                    orderBy: { createdAt: 'asc' },
+                },
+                user: {
+                    select: { name: true, email: true },
+                },
+            },
+        });
+        if (!candidate) {
+            const error = new Error('Candidate not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        return new Promise((resolve, reject) => {
+            const doc = new pdfkit_1.default({ margin: 50, size: 'A4' });
+            const buffers = [];
+            doc.on('data', (chunk) => buffers.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(buffers)));
+            doc.on('error', reject);
+            const reportId = (0, masking_1.generateRefId)('RPT');
+            const primaryColor = '#6366f1';
+            const darkColor = '#1e1b4b';
+            const grayColor = '#6b7280';
+            const successColor = '#10b981';
+            const failedColor = '#ef4444';
+            const pendingColor = '#f59e0b';
+            // ===== HEADER =====
+            doc.rect(0, 0, doc.page.width, 120).fill(darkColor);
+            doc.fill('#ffffff').fontSize(28).font('Helvetica-Bold').text('VShield', 50, 35);
+            doc.fill('#a5b4fc').fontSize(11).font('Helvetica').text('Background Verification Report', 50, 68);
+            doc.fill('#c7d2fe').fontSize(9).text(`Report ID: ${reportId}  |  Generated: ${(0, masking_1.formatDate)(new Date())}`, 50, 88);
+            // ===== STATUS BANNER =====
+            const statusColor = candidate.status === 'VERIFIED' ? successColor : candidate.status === 'FAILED' ? failedColor : pendingColor;
+            const statusText = candidate.status.replace('_', ' ');
+            doc.rect(50, 140, doc.page.width - 100, 36).fillAndStroke(statusColor, statusColor);
+            doc.fill('#ffffff').fontSize(13).font('Helvetica-Bold').text(`Overall Status: ${statusText}`, 65, 150);
+            // ===== CANDIDATE DETAILS =====
+            let y = 200;
+            doc.fill(darkColor).fontSize(16).font('Helvetica-Bold').text('Candidate Information', 50, y);
+            y += 8;
+            doc.moveTo(50, y + 18).lineTo(doc.page.width - 50, y + 18).strokeColor(primaryColor).lineWidth(2).stroke();
+            y += 30;
+            const details = [
+                ['Full Name', candidate.fullName],
+                ['Email', candidate.email],
+                ['Phone', candidate.phone],
+                ['Date of Birth', (0, masking_1.formatDate)(candidate.dateOfBirth)],
+                ['Aadhaar Number', (0, masking_1.maskAadhaar)(candidate.aadhaarNumber)],
+                ['PAN Number', (0, masking_1.maskPan)(candidate.panNumber)],
+                ['Address', candidate.address],
+            ];
+            doc.font('Helvetica').fontSize(10);
+            details.forEach(([label, value]) => {
+                doc.fill(grayColor).text(label + ':', 50, y, { width: 130 });
+                doc.fill(darkColor).font('Helvetica-Bold').text(value, 185, y);
+                doc.font('Helvetica');
+                y += 22;
+            });
+            // ===== VERIFICATION RESULTS =====
+            y += 15;
+            doc.fill(darkColor).fontSize(16).font('Helvetica-Bold').text('Verification Results', 50, y);
+            y += 8;
+            doc.moveTo(50, y + 18).lineTo(doc.page.width - 50, y + 18).strokeColor(primaryColor).lineWidth(2).stroke();
+            y += 35;
+            // Table Header
+            doc.rect(50, y - 5, doc.page.width - 100, 25).fill('#f3f4f6');
+            doc.fill(darkColor).fontSize(10).font('Helvetica-Bold');
+            doc.text('Type', 60, y);
+            doc.text('Status', 200, y);
+            doc.text('Reference ID', 310, y);
+            doc.text('Verified At', 440, y);
+            y += 30;
+            // Table Rows
+            doc.font('Helvetica').fontSize(10);
+            if (candidate.verificationLogs.length === 0) {
+                doc.fill(grayColor).text('No verification attempts yet.', 60, y);
+                y += 25;
+            }
+            else {
+                candidate.verificationLogs.forEach((log, index) => {
+                    if (index % 2 === 0) {
+                        doc.rect(50, y - 5, doc.page.width - 100, 25).fill('#fafafa');
+                    }
+                    doc.fill(darkColor).text(log.type, 60, y);
+                    const logStatusColor = log.status === 'SUCCESS' ? successColor : log.status === 'FAILED' ? failedColor : pendingColor;
+                    doc.fill(logStatusColor).font('Helvetica-Bold').text(log.status, 200, y);
+                    doc.font('Helvetica').fill(darkColor);
+                    const refId = log.responsePayload?.referenceId || 'N/A';
+                    doc.text(refId, 310, y);
+                    doc.text(log.verifiedAt ? (0, masking_1.formatDate)(log.verifiedAt) : 'N/A', 440, y);
+                    y += 25;
+                });
+            }
+            // ===== FOOTER =====
+            y += 30;
+            doc.moveTo(50, y).lineTo(doc.page.width - 50, y).strokeColor('#e5e7eb').lineWidth(1).stroke();
+            y += 15;
+            doc.fill(grayColor).fontSize(8).font('Helvetica');
+            doc.text('This report was generated by VShield Background Verification Platform.', 50, y);
+            doc.text('This is a confidential document. Unauthorized distribution is prohibited.', 50, y + 12);
+            doc.text(`Verified by: ${candidate.user.name} (${candidate.user.email})`, 50, y + 24);
+            doc.end();
+        });
+    }
+}
+exports.ReportService = ReportService;
+exports.reportService = new ReportService();
+//# sourceMappingURL=reportService.js.map
