@@ -1,0 +1,8 @@
+{
+  "name": "vshield-root",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "echo \"Vercel build step placeholder – actual builds are in frontend and backend configs\""
+  }
+}
