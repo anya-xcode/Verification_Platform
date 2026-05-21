@@ -1,5 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "buildCommand": "VITE_API_URL=https://verification-platform-psi.vercel.app/api npm run build",
+  "outputDirectory": "dist",
+  "env": {
+    "VITE_API_URL": "@vite_api_url"
+  }
 }
