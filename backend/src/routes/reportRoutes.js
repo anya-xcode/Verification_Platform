@@ -6,6 +6,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
+router.get('/pdf/:candidateId', reportController.getReport);
 router.get('/:candidateId', reportController.getReport);
 
 export default router;
