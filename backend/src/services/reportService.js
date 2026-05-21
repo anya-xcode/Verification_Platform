@@ -1,8 +1,6 @@
 import PDFDocument from 'pdfkit';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/db.js';
 import { maskAadhaar, maskPan, formatDate, generateRefId } from '../utils/masking.js';
-
-const prisma = new PrismaClient();
 
 export class ReportService {
   async generateReport(candidateId, userId) {

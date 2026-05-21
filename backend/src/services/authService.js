@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
-
-const prisma = new PrismaClient();
 
 export class AuthService {
   async register(email, password, name) {

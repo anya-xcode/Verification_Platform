@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/db.js';
 import { mockAadhaarVerification, mockPanVerification } from '../utils/mockApis.js';
 import { reportService } from './reportService.js';
 import { uploadReportToCloudinary } from '../utils/cloudinary.js';
-
-const prisma = new PrismaClient();
 
 export class VerificationService {
   async verifyAadhaar(candidateId, userId) {

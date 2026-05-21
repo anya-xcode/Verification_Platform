@@ -1,7 +1,5 @@
 import { authService } from '../services/authService.js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../config/db.js';
 
 export class AuthController {
   async register(req, res, next) {
