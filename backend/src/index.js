@@ -25,6 +25,10 @@ app.use(express.json());
 app.use(generalLimiter);
 
 // Health check endpoint
+app.get('/', (_req, res) => {
+  res.status(200).json({ message: 'VShield API is running', version: '1.0.0' });
+});
+
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
